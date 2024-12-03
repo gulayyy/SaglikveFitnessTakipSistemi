@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "mWWfmTBJa08=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\gulay\\OneDrive\\Masaüstü\\SağlıkvefitnessTakip\\SaglikveFitnessTakipSistemi\\backend\\backend.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\gulay\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.0\\microsoft.aspnetcore.openapi.9.0.0.nupkg.sha512",
+    "C:\\Users\\gulay\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
