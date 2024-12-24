@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SaglikveFitnessTakipSistemi.Models;
-using SaglikveFitnessTakipSistemi.Data;
-using System.Linq;
+using SaglikveFitnessTakipSistemi.Services;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SaglikveFitnessTakipSistemi.Controllers
@@ -11,81 +10,71 @@ namespace SaglikveFitnessTakipSistemi.Controllers
     [ApiController]
     public class WaterTrackingController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly WaterTrackingService _service;
 
-        public WaterTrackingController(AppDbContext context)
+        public WaterTrackingController(WaterTrackingService service)
         {
-            _context = context;
+            _service = service;
         }
 
-        // GET: api/WaterTrackings
-        [HttpGet]
-        public async Task<IActionResult> GetWaterTrackings()
+        // GET: api/WaterTracking/user/{userId}
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<WaterTracking>>> GetWaterTrackingsByUserId(int userId)
         {
-            var waterTrackings = await _context.WaterTrackings.ToListAsync();
+            var waterTrackings = await _service.GetWaterTrackingsByUserIdAsync(userId);
+            if (waterTrackings == null || !waterTrackings.Any())
+            {
+                return NotFound("No water tracking records found for this user.");
+            }
             return Ok(waterTrackings);
         }
 
-        // GET: api/WaterTrackings/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetWaterTracking(int id)
+
+        // GET: api/WaterTracking
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<WaterTracking>>> GetAllWaterTrackings()
         {
-            var waterTracking = await _context.WaterTrackings
-                .FirstOrDefaultAsync(x => x.WaterID == id);
+            return Ok(await _service.GetAllWaterTrackingsAsync());
+        }
 
+        // GET: api/WaterTracking/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<WaterTracking>> GetWaterTracking(int id)
+        {
+            var waterTracking = await _service.GetWaterTrackingByIdAsync(id);
             if (waterTracking == null)
+            {
                 return NotFound();
-
+            }
             return Ok(waterTracking);
         }
 
-        // POST: api/WaterTrackings
+        // POST: api/WaterTracking
         [HttpPost]
-        public async Task<IActionResult> CreateWaterTracking([FromBody] WaterTracking waterTracking)
+        public async Task<ActionResult<WaterTracking>> CreateWaterTracking(WaterTracking waterTracking)
         {
-            if (waterTracking == null)
-                return BadRequest();
-
-            _context.WaterTrackings.Add(waterTracking);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetWaterTracking), new { id = waterTracking.WaterID }, waterTracking);
+            var createdTracking = await _service.CreateWaterTrackingAsync(waterTracking);
+            return CreatedAtAction(nameof(GetWaterTracking), new { id = createdTracking.WaterID }, createdTracking);
         }
 
-        // PUT: api/WaterTrackings/{id}
+        // PUT: api/WaterTracking/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateWaterTracking(int id, [FromBody] WaterTracking waterTracking)
+        public async Task<IActionResult> UpdateWaterTracking(int id, WaterTracking waterTracking)
         {
             if (id != waterTracking.WaterID)
+            {
                 return BadRequest();
+            }
 
-            var existingWaterTracking = await _context.WaterTrackings
-                .FirstOrDefaultAsync(x => x.WaterID == id);
-
-            if (existingWaterTracking == null)
-                return NotFound();
-
-            existingWaterTracking.WaterAmountInLiters = waterTracking.WaterAmountInLiters;
-            existingWaterTracking.WaterDate = waterTracking.WaterDate;
-
-            await _context.SaveChangesAsync();
-
+            await _service.UpdateWaterTrackingAsync(waterTracking);
             return NoContent();
         }
 
-        // DELETE: api/WaterTrackings/{id}
+        // DELETE: api/WaterTracking/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWaterTracking(int id)
         {
-            var waterTracking = await _context.WaterTrackings
-                .FirstOrDefaultAsync(x => x.WaterID == id);
-
-            if (waterTracking == null)
-                return NotFound();
-
-            _context.WaterTrackings.Remove(waterTracking);
-            await _context.SaveChangesAsync();
-
+            await _service.DeleteWaterTrackingAsync(id);
             return NoContent();
         }
     }

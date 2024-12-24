@@ -1,67 +1,81 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SaglikveFitnessTakipSistemi.Data;
 using SaglikveFitnessTakipSistemi.Models;
+using SaglikveFitnessTakipSistemi.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-[ApiController]
-[Route("api/[controller]")]
-public class GoalsController : ControllerBase
+namespace SaglikveFitnessTakipSistemi.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public GoalsController(AppDbContext context)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class GoalController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly GoalService _service;
 
-    // GET: api/Goals
-    [HttpGet]
-    public async Task<IActionResult> GetGoals()
-    {
-        var goals = await _context.Goals.ToListAsync();
-        return Ok(goals);
-    }
+        public GoalController(GoalService service)
+        {
+            _service = service;
+        }
 
-    // GET: api/Goals/{id}
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetGoal(int id)
-    {
-        var goal = await _context.Goals.FindAsync(id);
-        if (goal == null) return NotFound();
-        return Ok(goal);
-    }
+        // GET: api/Goal/user/{userId}
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<Goal>>> GetGoalsByUser(int userId)
+        {
+            var goals = await _service.GetGoalsByUserIdAsync(userId);
+            if (goals == null || !goals.Any())
+            {
+                return NotFound();
+            }
+            return Ok(goals);
+        }
 
-    // POST: api/Goals
-    [HttpPost]
-    public async Task<IActionResult> CreateGoal(Goal goal)
-    {
-        _context.Goals.Add(goal);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetGoal), new { id = goal.GoalID }, goal);
-    }
 
-    // PUT: api/Goals/{id}
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateGoal(int id, Goal goal)
-    {
-        if (id != goal.GoalID) return BadRequest();
+        // GET: api/Goal
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Goal>>> GetAllGoals()
+        {
+            return Ok(await _service.GetAllGoalsAsync());
+        }
 
-        _context.Entry(goal).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        // GET: api/Goal/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Goal>> GetGoal(int id)
+        {
+            var goal = await _service.GetGoalByIdAsync(id);
+            if (goal == null)
+            {
+                return NotFound();
+            }
+            return Ok(goal);
+        }
 
-        return NoContent();
-    }
+        // POST: api/Goal
+        [HttpPost]
+        public async Task<ActionResult<Goal>> CreateGoal(Goal goal)
+        {
+            var createdGoal = await _service.CreateGoalAsync(goal);
+            return CreatedAtAction(nameof(GetGoal), new { id = createdGoal.GoalID }, createdGoal);
+        }
 
-    // DELETE: api/Goals/{id}
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteGoal(int id)
-    {
-        var goal = await _context.Goals.FindAsync(id);
-        if (goal == null) return NotFound();
+        // PUT: api/Goal/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateGoal(int id, Goal goal)
+        {
+            if (id != goal.GoalID)
+            {
+                return BadRequest();
+            }
 
-        _context.Goals.Remove(goal);
-        await _context.SaveChangesAsync();
+            await _service.UpdateGoalAsync(goal);
+            return NoContent();
+        }
 
-        return NoContent();
+        // DELETE: api/Goal/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteGoal(int id)
+        {
+            await _service.DeleteGoalAsync(id);
+            return NoContent();
+        }
     }
 }

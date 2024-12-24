@@ -1,63 +1,93 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SaglikveFitnessTakipSistemi.Models;
-using SaglikveFitnessTakipSistemi.Data;
+using SaglikveFitnessTakipSistemi.Services;
 
-[ApiController]
-[Route("api/[controller]")]
-
-public class UsersController : ControllerBase
+namespace SaglikveFitnessTakipSistemi.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public UsersController(AppDbContext context)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class UserController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly UserService _service;
 
-    // GET: api/users
-    [HttpGet]
-    public async Task<IActionResult> GetUsers()
-    {
-        var users = await _context.Users.ToListAsync();
-        return Ok(users);
-    }
+        public UserController(UserService service)
+        {
+            _service = service;
+        }
 
-    // POST: api/users
-    [HttpPost]
-    public async Task<IActionResult> CreateUser(User user)
-    {
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-        return Ok(user);
-    }
+        // GET: api/User
+        [HttpGet]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await _service.GetAllUsersAsync();
+            return Ok(users);
+        }
 
-    // PUT: api/users/{id}
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUser(int id, User user)
-    {
-        var existingUser = await _context.Users.FindAsync(id);
-        if (existingUser == null) return NotFound();
+        // GET: api/User/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUser(int id)
+        {
+            var user = await _service.GetUserByIdAsync(id);
+            if (user == null) return NotFound();
+            return Ok(user);
+        }
 
-        existingUser.UserName = user.UserName;
-        existingUser.Email = user.Email;
-        existingUser.Age = user.Age;
-        // Diğer alanları güncelleyin...
+        // POST: api/User
+        [HttpPost]
+        public async Task<IActionResult> CreateUser([FromBody] User user)
+        {
+            var createdUser = await _service.CreateUserAsync(user);
+            return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserID }, createdUser);
+        }
 
-        await _context.SaveChangesAsync();
-        return Ok(existingUser);
-    }
+        // PUT: api/User/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
+        {
+            if (id != user.UserID) return BadRequest();
 
-    // DELETE: api/users/{id}
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteUser(int id)
-    {
-        var user = await _context.Users.FindAsync(id);
-        if (user == null) return NotFound();
+            var updated = await _service.UpdateUserAsync(user);
+            if (!updated) return NotFound();
+            return NoContent();
+        }
 
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
-        return NoContent();
+        // DELETE: api/User/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var deleted = await _service.DeleteUserAsync(id);
+            if (!deleted) return NotFound();
+            return NoContent();
+        }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest model)
+        {
+            if (model == null)
+            {
+                return BadRequest(new { message = "Gönderilen veri null veya hatalı." });
+            }
+
+            if (string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))
+            {
+                return BadRequest(new { message = "Email ve şifre gereklidir." });
+            }
+
+            var user = await _service.AuthenticateUserAsync(model.Email, model.Password);
+            if (user == null)
+            {
+                return Unauthorized(new { message = "Geçersiz email veya şifre." });
+            }
+
+            return Ok(new
+            {
+                message = "Giriş başarılı!",
+                user = new
+                {
+                    user.UserID,
+                    user.Email,
+                    user.UserName
+                }
+            });
+        }
     }
 }

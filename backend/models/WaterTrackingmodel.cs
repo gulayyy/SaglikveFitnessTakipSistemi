@@ -9,6 +9,6 @@ namespace SaglikveFitnessTakipSistemi.Models
         public decimal WaterAmountInLiters { get; set; }
         public DateTime WaterDate { get; set; }
 
-        public virtual User User { get; set; }
+        public virtual User? User { get; set; }
     }
 }

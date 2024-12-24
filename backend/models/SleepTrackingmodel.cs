@@ -13,6 +13,6 @@ namespace SaglikveFitnessTakipSistemi.Models
         public int TotalSleepHours => (int)(SleepEnd - SleepStart).TotalHours;
 
         // Navigation Property
-        public virtual User User { get; set; }
+        public virtual User? User { get; set; }
     }
 }

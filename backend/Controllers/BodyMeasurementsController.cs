@@ -1,67 +1,83 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SaglikveFitnessTakipSistemi.Data;
 using SaglikveFitnessTakipSistemi.Models;
+using SaglikveFitnessTakipSistemi.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-[ApiController]
-[Route("api/[controller]")]
-public class BodyMeasurementsController : ControllerBase
+namespace SaglikveFitnessTakipSistemi.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public BodyMeasurementsController(AppDbContext context)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class BodyMeasurementController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly BodyMeasurementService _service;
 
-    // GET: api/BodyMeasurements
-    [HttpGet]
-    public async Task<IActionResult> GetBodyMeasurements()
-    {
-        var bodyMeasurements = await _context.BodyMeasurements.ToListAsync();
-        return Ok(bodyMeasurements);
-    }
+        public BodyMeasurementController(BodyMeasurementService service)
+        {
+            _service = service;
+        }
 
-    // GET: api/BodyMeasurements/{id}
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetBodyMeasurement(int id)
-    {
-        var bodyMeasurement = await _context.BodyMeasurements.FindAsync(id);
-        if (bodyMeasurement == null) return NotFound();
-        return Ok(bodyMeasurement);
-    }
+        // Kullanıcıya göre body measurements getir
+        [HttpGet("user/{userID}")]
+        public async Task<ActionResult<IEnumerable<BodyMeasurement>>> GetBodyMeasurementsByUser(int userID)
+        {
+            var bodyMeasurements = await _service.GetBodyMeasurementsByUserAsync(userID);
 
-    // POST: api/BodyMeasurements
-    [HttpPost]
-    public async Task<IActionResult> CreateBodyMeasurement(BodyMeasurement bodyMeasurement)
-    {
-        _context.BodyMeasurements.Add(bodyMeasurement);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetBodyMeasurement), new { id = bodyMeasurement.MeasurementID }, bodyMeasurement);
-    }
+            if (bodyMeasurements == null || !bodyMeasurements.Any())
+            {
+                return NotFound(new { message = "No body measurements found for this user." });
+            }
 
-    // PUT: api/BodyMeasurements/{id}
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateBodyMeasurement(int id, BodyMeasurement bodyMeasurement)
-    {
-        if (id != bodyMeasurement.MeasurementID) return BadRequest();
+            return Ok(bodyMeasurements);
+        }
 
-        _context.Entry(bodyMeasurement).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
 
-        return NoContent();
-    }
+        // GET: api/BodyMeasurement
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<BodyMeasurement>>> GetAllBodyMeasurements()
+        {
+            return Ok(await _service.GetAllBodyMeasurementsAsync());
+        }
 
-    // DELETE: api/BodyMeasurements/{id}
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteBodyMeasurement(int id)
-    {
-        var bodyMeasurement = await _context.BodyMeasurements.FindAsync(id);
-        if (bodyMeasurement == null) return NotFound();
+        // GET: api/BodyMeasurement/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<BodyMeasurement>> GetBodyMeasurement(int id)
+        {
+            var bodyMeasurement = await _service.GetBodyMeasurementByIdAsync(id);
+            if (bodyMeasurement == null)
+            {
+                return NotFound();
+            }
+            return Ok(bodyMeasurement);
+        }
 
-        _context.BodyMeasurements.Remove(bodyMeasurement);
-        await _context.SaveChangesAsync();
+        // POST: api/BodyMeasurement
+        [HttpPost]
+        public async Task<ActionResult<BodyMeasurement>> CreateBodyMeasurement(BodyMeasurement bodyMeasurement)
+        {
+            var createdMeasurement = await _service.CreateBodyMeasurementAsync(bodyMeasurement);
+            return CreatedAtAction(nameof(GetBodyMeasurement), new { id = createdMeasurement.MeasurementID }, createdMeasurement);
+        }
 
-        return NoContent();
+        // PUT: api/BodyMeasurement/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateBodyMeasurement(int id, BodyMeasurement bodyMeasurement)
+        {
+            if (id != bodyMeasurement.MeasurementID)
+            {
+                return BadRequest();
+            }
+
+            await _service.UpdateBodyMeasurementAsync(bodyMeasurement);
+            return NoContent();
+        }
+
+        // DELETE: api/BodyMeasurement/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBodyMeasurement(int id)
+        {
+            await _service.DeleteBodyMeasurementAsync(id);
+            return NoContent();
+        }
     }
 }

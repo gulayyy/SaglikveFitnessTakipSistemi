@@ -1,51 +1,61 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SaglikveFitnessTakipSistemi.Data;
 using SaglikveFitnessTakipSistemi.Models;
+using SaglikveFitnessTakipSistemi.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SaglikveFitnessTakipSistemi.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class SleepTrackingController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly SleepTrackingService _service;
 
-        public SleepTrackingController(AppDbContext context)
+        public SleepTrackingController(SleepTrackingService service)
         {
-            _context = context;
+            _service = service;
         }
+
+        // GET: api/SleepTracking/user/{userId}
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<SleepTracking>>> GetSleepTrackingsByUserId(int userId)
+        {
+            var sleepTrackings = await _service.GetSleepTrackingsByUserIdAsync(userId);
+            if (sleepTrackings == null || !sleepTrackings.Any())
+            {
+                return NotFound("No sleep tracking records found for this user.");
+            }
+            return Ok(sleepTrackings);
+        }
+
+
 
         // GET: api/SleepTracking
         [HttpGet]
-        public async Task<IActionResult> GetSleepTrackings()
+        public async Task<ActionResult<IEnumerable<SleepTracking>>> GetAllSleepTrackings()
         {
-            var sleepTrackings = await _context.SleepTrackings.ToListAsync();
-            return Ok(sleepTrackings);
+            return Ok(await _service.GetAllSleepTrackingsAsync());
         }
 
         // GET: api/SleepTracking/{id}
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetSleepTracking(int id)
+        public async Task<ActionResult<SleepTracking>> GetSleepTracking(int id)
         {
-            var sleepTracking = await _context.SleepTrackings.FindAsync(id);
+            var sleepTracking = await _service.GetSleepTrackingByIdAsync(id);
             if (sleepTracking == null)
+            {
                 return NotFound();
-
+            }
             return Ok(sleepTracking);
         }
 
         // POST: api/SleepTracking
         [HttpPost]
-        public async Task<IActionResult> CreateSleepTracking(SleepTracking sleepTracking)
+        public async Task<ActionResult<SleepTracking>> CreateSleepTracking(SleepTracking sleepTracking)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            _context.SleepTrackings.Add(sleepTracking);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetSleepTracking), new { id = sleepTracking.SleepID }, sleepTracking);
+            var createdTracking = await _service.CreateSleepTrackingAsync(sleepTracking);
+            return CreatedAtAction(nameof(GetSleepTracking), new { id = createdTracking.SleepID }, createdTracking);
         }
 
         // PUT: api/SleepTracking/{id}
@@ -53,22 +63,11 @@ namespace SaglikveFitnessTakipSistemi.Controllers
         public async Task<IActionResult> UpdateSleepTracking(int id, SleepTracking sleepTracking)
         {
             if (id != sleepTracking.SleepID)
+            {
                 return BadRequest();
-
-            _context.Entry(sleepTracking).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SleepTrackingExists(id))
-                    return NotFound();
-                else
-                    throw;
             }
 
+            await _service.UpdateSleepTrackingAsync(sleepTracking);
             return NoContent();
         }
 
@@ -76,19 +75,8 @@ namespace SaglikveFitnessTakipSistemi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSleepTracking(int id)
         {
-            var sleepTracking = await _context.SleepTrackings.FindAsync(id);
-            if (sleepTracking == null)
-                return NotFound();
-
-            _context.SleepTrackings.Remove(sleepTracking);
-            await _context.SaveChangesAsync();
-
+            await _service.DeleteSleepTrackingAsync(id);
             return NoContent();
-        }
-
-        private bool SleepTrackingExists(int id)
-        {
-            return _context.SleepTrackings.Any(e => e.SleepID == id);
         }
     }
 }

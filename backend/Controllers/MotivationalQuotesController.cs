@@ -1,67 +1,68 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SaglikveFitnessTakipSistemi.Data;
 using SaglikveFitnessTakipSistemi.Models;
+using SaglikveFitnessTakipSistemi.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-[ApiController]
-[Route("api/[controller]")]
-public class MotivationalQuotesController : ControllerBase
+namespace SaglikveFitnessTakipSistemi.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public MotivationalQuotesController(AppDbContext context)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class MotivationalQuoteController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly MotivationalQuoteService _service;
 
-    // GET: api/MotivationalQuotes
-    [HttpGet]
-    public async Task<IActionResult> GetMotivationalQuotes()
-    {
-        var motivationalQuotes = await _context.MotivationalQuotes.ToListAsync();
-        return Ok(motivationalQuotes);
-    }
+        public MotivationalQuoteController(MotivationalQuoteService service)
+        {
+            _service = service;
+        }
 
-    // GET: api/MotivationalQuotes/{id}
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetMotivationalQuote(int id)
-    {
-        var motivationalQuote = await _context.MotivationalQuotes.FindAsync(id);
-        if (motivationalQuote == null) return NotFound();
-        return Ok(motivationalQuote);
-    }
+        // GET: api/MotivationalQuote
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<MotivationalQuote>>> GetAllQuotes()
+        {
+            return Ok(await _service.GetAllQuotesAsync());
+        }
 
-    // POST: api/MotivationalQuotes
-    [HttpPost]
-    public async Task<IActionResult> CreateMotivationalQuote(MotivationalQuote motivationalQuote)
-    {
-        _context.MotivationalQuotes.Add(motivationalQuote);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetMotivationalQuote), new { id = motivationalQuote.QuoteID }, motivationalQuote);
-    }
+        // GET: api/MotivationalQuote/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<MotivationalQuote>> GetQuote(int id)
+        {
+            var quote = await _service.GetQuoteByIdAsync(id);
+            if (quote == null)
+            {
+                return NotFound();
+            }
+            return Ok(quote);
+        }
 
-    // PUT: api/MotivationalQuotes/{id}
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateMotivationalQuote(int id, MotivationalQuote motivationalQuote)
-    {
-        if (id != motivationalQuote.QuoteID) return BadRequest();
+        // POST: api/MotivationalQuote
+        [HttpPost]
+        public async Task<ActionResult<MotivationalQuote>> CreateQuote(MotivationalQuote quote)
+        {
+            var createdQuote = await _service.CreateQuoteAsync(quote);
+            return CreatedAtAction(nameof(GetQuote), new { id = createdQuote.QuoteID }, createdQuote);
+        }
 
-        _context.Entry(motivationalQuote).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        // PUT: api/MotivationalQuote/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateQuote(int id, MotivationalQuote quote)
+        {
+            if (id != quote.QuoteID)
+            {
+                return BadRequest();
+            }
 
-        return NoContent();
-    }
+            await _service.UpdateQuoteAsync(quote);
+            return NoContent();
+        }
 
-    // DELETE: api/MotivationalQuotes/{id}
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteMotivationalQuote(int id)
-    {
-        var motivationalQuote = await _context.MotivationalQuotes.FindAsync(id);
-        if (motivationalQuote == null) return NotFound();
-
-        _context.MotivationalQuotes.Remove(motivationalQuote);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        // DELETE: api/MotivationalQuote/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteQuote(int id)
+        {
+            await _service.DeleteQuoteAsync(id);
+            return NoContent();
+        }
     }
 }

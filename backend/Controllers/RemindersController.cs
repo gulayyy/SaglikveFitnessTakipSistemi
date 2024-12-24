@@ -1,92 +1,80 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SaglikveFitnessTakipSistemi.Models;
-using SaglikveFitnessTakipSistemi.Data;
-using System.Linq;
+using SaglikveFitnessTakipSistemi.Services;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SaglikveFitnessTakipSistemi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RemindersController : ControllerBase
+    public class ReminderController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ReminderService _service;
 
-        public RemindersController(AppDbContext context)
+        public ReminderController(ReminderService service)
         {
-            _context = context;
+            _service = service;
         }
 
-        // GET: api/Reminders
-        [HttpGet]
-        public async Task<IActionResult> GetReminders()
+        // GET: api/Reminder/user/{userId}
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<Reminder>>> GetRemindersByUser(int userId)
         {
-            var reminders = await _context.Reminders.ToListAsync();
+            var reminders = await _service.GetRemindersByUserIdAsync(userId);
+            if (reminders == null || !reminders.Any())
+            {
+                return NotFound(new { message = "No reminders found for this user." });
+            }
             return Ok(reminders);
         }
 
-        // GET: api/Reminders/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetReminder(int id)
+
+        // GET: api/Reminder
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Reminder>>> GetAllReminders()
         {
-            var reminder = await _context.Reminders
-                .FirstOrDefaultAsync(x => x.ReminderID == id);
+            return Ok(await _service.GetAllRemindersAsync());
+        }
 
+        // GET: api/Reminder/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Reminder>> GetReminder(int id)
+        {
+            var reminder = await _service.GetReminderByIdAsync(id);
             if (reminder == null)
+            {
                 return NotFound();
-
+            }
             return Ok(reminder);
         }
 
-        // POST: api/Reminders
+        // POST: api/Reminder
         [HttpPost]
-        public async Task<IActionResult> CreateReminder([FromBody] Reminder reminder)
+        public async Task<ActionResult<Reminder>> CreateReminder(Reminder reminder)
         {
-            if (reminder == null)
-                return BadRequest();
-
-            _context.Reminders.Add(reminder);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetReminder), new { id = reminder.ReminderID }, reminder);
+            var createdReminder = await _service.CreateReminderAsync(reminder);
+            return CreatedAtAction(nameof(GetReminder), new { id = createdReminder.ReminderID }, createdReminder);
         }
 
-        // PUT: api/Reminders/{id}
+        // PUT: api/Reminder/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateReminder(int id, [FromBody] Reminder reminder)
+        public async Task<IActionResult> UpdateReminder(int id, Reminder reminder)
         {
             if (id != reminder.ReminderID)
+            {
                 return BadRequest();
+            }
 
-            var existingReminder = await _context.Reminders
-                .FirstOrDefaultAsync(x => x.ReminderID == id);
-
-            if (existingReminder == null)
-                return NotFound();
-
-            existingReminder.ReminderText = reminder.ReminderText;
-            existingReminder.ReminderDate = reminder.ReminderDate;
-            existingReminder.IsCompleted = reminder.IsCompleted;
-
-            await _context.SaveChangesAsync();
-
+            await _service.UpdateReminderAsync(reminder);
             return NoContent();
         }
 
-        // DELETE: api/Reminders/{id}
+        // DELETE: api/Reminder/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteReminder(int id)
         {
-            var reminder = await _context.Reminders
-                .FirstOrDefaultAsync(x => x.ReminderID == id);
-
-            if (reminder == null)
-                return NotFound();
-
-            _context.Reminders.Remove(reminder);
-            await _context.SaveChangesAsync();
-
+            await _service.DeleteReminderAsync(id);
             return NoContent();
         }
     }

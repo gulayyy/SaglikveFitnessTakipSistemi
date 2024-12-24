@@ -1,67 +1,89 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SaglikveFitnessTakipSistemi.Data;
 using SaglikveFitnessTakipSistemi.Models;
+using SaglikveFitnessTakipSistemi.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-[ApiController]
-[Route("api/[controller]")]
-public class ActivitiesController : ControllerBase
+namespace SaglikveFitnessTakipSistemi.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public ActivitiesController(AppDbContext context)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ActivityController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly ActivityService _service;
 
-    // GET: api/Activities
-    [HttpGet]
-    public async Task<IActionResult> GetActivities()
-    {
-        var activities = await _context.Activities.ToListAsync();
-        return Ok(activities);
-    }
+        public ActivityController(ActivityService service)
+        {
+            _service = service;
+        }
 
-    // GET: api/Activities/{id}
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetActivity(int id)
-    {
-        var activity = await _context.Activities.FindAsync(id);
-        if (activity == null) return NotFound();
-        return Ok(activity);
-    }
+        // Kullanıcıya göre aktiviteleri getir
+        [HttpGet("user/{userID}")]
+        public async Task<ActionResult<IEnumerable<Activity>>> GetActivitiesByUserId(int userID)
+        {
+            var activities = await _service.GetActivitiesByUserIdAsync(userID);
 
-    // POST: api/Activities
-    [HttpPost]
-    public async Task<IActionResult> CreateActivity(Activity activity)
-    {
-        _context.Activities.Add(activity);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetActivity), new { id = activity.ActivityID }, activity);
-    }
+            if (activities == null || !activities.Any())
+            {
+                return NotFound(new { message = "No activities found for this user." });
+            }
 
-    // PUT: api/Activities/{id}
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateActivity(int id, Activity activity)
-    {
-        if (id != activity.ActivityID) return BadRequest();
+            return Ok(activities);
+        }
 
-        _context.Entry(activity).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        // GET: api/Activity
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Activity>>> GetAllActivities()
+        {
+            return Ok(await _service.GetAllActivitiesAsync());
+        }
 
-        return NoContent();
-    }
+        // GET: api/Activity/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Activity>> GetActivity(int id)
+        {
+            var activity = await _service.GetActivityByIdAsync(id);
+            if (activity == null)
+            {
+                return NotFound();
+            }
+            return Ok(activity);
+        }
 
-    // DELETE: api/Activities/{id}
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteActivity(int id)
-    {
-        var activity = await _context.Activities.FindAsync(id);
-        if (activity == null) return NotFound();
+        // POST: api/Activity
+        [HttpPost]
+        public async Task<ActionResult<Activity>> CreateActivity(Activity activity)
+        {
+            // Kullanıcı bilgisi frontend'den gönderilmeli veya token'dan alınmalı
+            if (activity.UserID == 0)
+            {
+                return BadRequest(new { message = "UserID is required to create an activity." });
+            }
 
-        _context.Activities.Remove(activity);
-        await _context.SaveChangesAsync();
+            var createdActivity = await _service.CreateActivityAsync(activity);
+            return CreatedAtAction(nameof(GetActivity), new { id = createdActivity.ActivityID }, createdActivity);
+        }
 
-        return NoContent();
+
+        // PUT: api/Activity/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateActivity(int id, Activity activity)
+        {
+            if (id != activity.ActivityID)
+            {
+                return BadRequest();
+            }
+
+            await _service.UpdateActivityAsync(activity);
+            return NoContent();
+        }
+
+        // DELETE: api/Activity/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteActivity(int id)
+        {
+            await _service.DeleteActivityAsync(id);
+            return NoContent();
+        }
     }
 }

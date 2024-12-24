@@ -1,67 +1,80 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SaglikveFitnessTakipSistemi.Data;
 using SaglikveFitnessTakipSistemi.Models;
+using SaglikveFitnessTakipSistemi.Services;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-[ApiController]
-[Route("api/[controller]")]
-public class MedicalRecordsController : ControllerBase
+namespace SaglikveFitnessTakipSistemi.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public MedicalRecordsController(AppDbContext context)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class MedicalRecordController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly MedicalRecordService _service;
 
-    // GET: api/MedicalRecords
-    [HttpGet]
-    public async Task<IActionResult> GetMedicalRecords()
-    {
-        var medicalRecords = await _context.MedicalRecords.ToListAsync();
-        return Ok(medicalRecords);
-    }
+        public MedicalRecordController(MedicalRecordService service)
+        {
+            _service = service;
+        }
 
-    // GET: api/MedicalRecords/{id}
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetMedicalRecord(int id)
-    {
-        var medicalRecord = await _context.MedicalRecords.FindAsync(id);
-        if (medicalRecord == null) return NotFound();
-        return Ok(medicalRecord);
-    }
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<MedicalRecord>>> GetMedicalRecordsByUser(int userId)
+        {
+            var records = await _service.GetMedicalRecordsByUserIdAsync(userId);
+            if (records == null || !records.Any())
+            {
+                return NotFound(new { message = "No records found for the given user ID." });
+            }
+            return Ok(records);
+        }
 
-    // POST: api/MedicalRecords
-    [HttpPost]
-    public async Task<IActionResult> CreateMedicalRecord(MedicalRecord medicalRecord)
-    {
-        _context.MedicalRecords.Add(medicalRecord);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetMedicalRecord), new { id = medicalRecord.RecordID }, medicalRecord);
-    }
 
-    // PUT: api/MedicalRecords/{id}
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateMedicalRecord(int id, MedicalRecord medicalRecord)
-    {
-        if (id != medicalRecord.RecordID) return BadRequest();
+        // GET: api/MedicalRecord
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<MedicalRecord>>> GetAllMedicalRecords()
+        {
+            return Ok(await _service.GetAllMedicalRecordsAsync());
+        }
 
-        _context.Entry(medicalRecord).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        // GET: api/MedicalRecord/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<MedicalRecord>> GetMedicalRecord(int id)
+        {
+            var record = await _service.GetMedicalRecordByIdAsync(id);
+            if (record == null)
+            {
+                return NotFound();
+            }
+            return Ok(record);
+        }
 
-        return NoContent();
-    }
+        // POST: api/MedicalRecord
+        [HttpPost]
+        public async Task<ActionResult<MedicalRecord>> CreateMedicalRecord(MedicalRecord record)
+        {
+            var createdRecord = await _service.CreateMedicalRecordAsync(record);
+            return CreatedAtAction(nameof(GetMedicalRecord), new { id = createdRecord.RecordID }, createdRecord);
+        }
 
-    // DELETE: api/MedicalRecords/{id}
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteMedicalRecord(int id)
-    {
-        var medicalRecord = await _context.MedicalRecords.FindAsync(id);
-        if (medicalRecord == null) return NotFound();
+        // PUT: api/MedicalRecord/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateMedicalRecord(int id, MedicalRecord record)
+        {
+            if (id != record.RecordID)
+            {
+                return BadRequest();
+            }
 
-        _context.MedicalRecords.Remove(medicalRecord);
-        await _context.SaveChangesAsync();
+            await _service.UpdateMedicalRecordAsync(record);
+            return NoContent();
+        }
 
-        return NoContent();
+        // DELETE: api/MedicalRecord/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMedicalRecord(int id)
+        {
+            await _service.DeleteMedicalRecordAsync(id);
+            return NoContent();
+        }
     }
 }
