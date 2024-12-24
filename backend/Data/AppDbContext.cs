@@ -84,6 +84,7 @@ namespace SaglikveFitnessTakipSistemi.Data
             {
                 entity.HasKey(m => m.QuoteID);
             });
+           
         }
     }
 }

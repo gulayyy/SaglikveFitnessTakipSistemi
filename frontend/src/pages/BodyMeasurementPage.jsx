@@ -8,12 +8,12 @@ const BodyMeasurementPage = () => {
     bodyMeasurements,
     fetchBodyMeasurementsByUser,
     createBodyMeasurement,
-    updateBodyMeasurement,
     deleteBodyMeasurement,
     loading,
     error,
   } = useBodyMeasurementStore();
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     chest: "",
     waist: "",
@@ -29,8 +29,6 @@ const BodyMeasurementPage = () => {
   useEffect(() => {
     fetchBodyMeasurementsByUser();
   }, [fetchBodyMeasurementsByUser]);
-
-
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -65,19 +63,7 @@ const BodyMeasurementPage = () => {
       leg: "",
       measurementDate: "",
     });
-  };
-
-  const handleEdit = (measurement) => {
-    setEditMode(true);
-    setEditId(measurement.measurementID);
-    setFormData({
-      chest: measurement.chest || "",
-      waist: measurement.waist || "",
-      hips: measurement.hips || "",
-      arm: measurement.arm || "",
-      leg: measurement.leg || "",
-      measurementDate: measurement.measurementDate.split("T")[0],
-    });
+    setIsModalOpen(false);
   };
 
   const handleDelete = async (id) => {
@@ -85,96 +71,134 @@ const BodyMeasurementPage = () => {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Body Measurements</h1>
+    <div className="min-h-screen bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 p-8">
+      <h1 className="text-4xl font-extrabold text-center text-blue-800 mb-12">
+        Your Body Measurements
+      </h1>
 
-      {loading && <p>Loading...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {loading && <p className="text-gray-500 text-center">Loading...</p>}
+      {error && <p className="text-red-500 text-center">{error}</p>}
 
-      <form onSubmit={handleSubmit} className="mb-6 space-y-4">
-        <input
-          type="number"
-          name="chest"
-          placeholder="Chest (cm)"
-          value={formData.chest}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-        />
-        <input
-          type="number"
-          name="waist"
-          placeholder="Waist (cm)"
-          value={formData.waist}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-        />
-        <input
-          type="number"
-          name="hips"
-          placeholder="Hips (cm)"
-          value={formData.hips}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-        />
-        <input
-          type="number"
-          name="arm"
-          placeholder="Arm (cm)"
-          value={formData.arm}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-        />
-        <input
-          type="number"
-          name="leg"
-          placeholder="Leg (cm)"
-          value={formData.leg}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-        />
-        <input
-          type="date"
-          name="measurementDate"
-          placeholder="Measurement Date"
-          value={formData.measurementDate}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-          required
-        />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-        >
-          {editMode ? "Update Measurement" : "Add Measurement"}
-        </button>
-      </form>
+      {/* Add Measurement Button */}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:scale-105 transform transition"
+      >
+        + Add Measurement
+      </button>
 
-      <ul className="space-y-4">
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-md">
+            <h2 className="text-2xl font-semibold mb-6 text-gray-700 text-center">
+              Add New Measurement
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <input
+                type="number"
+                name="chest"
+                placeholder="Chest (cm)"
+                value={formData.chest}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-indigo-300"
+                required
+              />
+              <input
+                type="number"
+                name="waist"
+                placeholder="Waist (cm)"
+                value={formData.waist}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-indigo-300"
+                required
+              />
+              <input
+                type="number"
+                name="hips"
+                placeholder="Hips (cm)"
+                value={formData.hips}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-indigo-300"
+              />
+              <input
+                type="number"
+                name="arm"
+                placeholder="Arm (cm)"
+                value={formData.arm}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-indigo-300"
+              />
+              <input
+                type="number"
+                name="leg"
+                placeholder="Leg (cm)"
+                value={formData.leg}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-indigo-300"
+              />
+              <input
+                type="date"
+                name="measurementDate"
+                value={formData.measurementDate}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-indigo-300"
+                required
+              />
+              <div className="flex justify-end space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="bg-gray-500 text-white py-3 px-6 rounded-lg hover:bg-gray-600 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition"
+                >
+                  Add
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Measurements List */}
+      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {bodyMeasurements.map((measurement) => (
-          <li key={measurement.measurementID} className="p-4 border rounded shadow">
-            <h2 className="text-lg font-bold">Measurement on {new Date(measurement.measurementDate).toLocaleDateString()}</h2>
-            <p>Chest: {measurement.chest || "N/A"} cm</p>
-            <p>Waist: {measurement.waist || "N/A"} cm</p>
-            <p>Hips: {measurement.hips || "N/A"} cm</p>
-            <p>Arm: {measurement.arm || "N/A"} cm</p>
-            <p>Leg: {measurement.leg || "N/A"} cm</p>
-            <div className="flex space-x-4 mt-2">
-              <button
-                onClick={() => handleEdit(measurement)}
-                className="bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-600"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(measurement.measurementID)}
-                className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </div>
-          </li>
+          <div
+            key={measurement.measurementID}
+            className="p-6 bg-gradient-to-br from-blue-100 to-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105"
+          >
+            <h2 className="text-xl font-bold text-blue-800 mb-2">
+              Measurement on {new Date(measurement.measurementDate).toLocaleDateString()}
+            </h2>
+            <p className="text-gray-700 mb-2">
+              <strong>Chest:</strong> {measurement.chest || "N/A"} cm
+            </p>
+            <p className="text-gray-700 mb-2">
+              <strong>Waist:</strong> {measurement.waist || "N/A"} cm
+            </p>
+            <p className="text-gray-700 mb-2">
+              <strong>Hips:</strong> {measurement.hips || "N/A"} cm
+            </p>
+            <p className="text-gray-700 mb-2">
+              <strong>Arm:</strong> {measurement.arm || "N/A"} cm
+            </p>
+            <p className="text-gray-700 mb-2">
+              <strong>Leg:</strong> {measurement.leg || "N/A"} cm
+            </p>
+            <button
+              onClick={() => handleDelete(measurement.measurementID)}
+              className="mt-4 bg-pink-500 text-white py-2 px-4 rounded-lg hover:bg-pink-600 transition"
+            >
+              Delete
+            </button>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };

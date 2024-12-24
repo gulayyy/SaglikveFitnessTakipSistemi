@@ -12,6 +12,7 @@ const MedicalRecordPage = () => {
     error,
   } = useMedicalRecordStore();
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     recordDate: "",
     diagnosis: "",
@@ -44,6 +45,7 @@ const MedicalRecordPage = () => {
       diagnosis: "",
       notes: "",
     });
+    setIsModalOpen(false);
   };
 
   const handleEdit = (record) => {
@@ -54,6 +56,7 @@ const MedicalRecordPage = () => {
       diagnosis: record.diagnosis || "",
       notes: record.notes || "",
     });
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => {
@@ -61,71 +64,102 @@ const MedicalRecordPage = () => {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Medical Records</h1>
+    <div className="min-h-screen bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 p-8">
+      <h1 className="text-4xl font-extrabold text-center text-blue-800 mb-12">
+        Medical Records
+      </h1>
 
-      {loading && <p>Loading...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {loading && <p className="text-gray-500 text-center">Loading...</p>}
+      {error && <p className="text-red-500 text-center">{error}</p>}
 
-      <form onSubmit={handleSubmit} className="mb-6 space-y-4">
-        <input
-          type="date"
-          name="recordDate"
-          value={formData.recordDate}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="text"
-          name="diagnosis"
-          placeholder="Diagnosis"
-          value={formData.diagnosis}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-          required
-        />
-        <textarea
-          name="notes"
-          placeholder="Notes"
-          value={formData.notes}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-          rows="3"
-        ></textarea>
-        <button
-          type="submit"
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-        >
-          {editMode ? "Update Record" : "Add Record"}
-        </button>
-      </form>
+      {/* Add Record Button */}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:scale-105 transform transition"
+      >
+        + Add Record
+      </button>
 
-      <ul className="space-y-4">
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-md">
+            <h2 className="text-2xl font-semibold mb-6 text-gray-700 text-center">
+              {editMode ? "Edit Medical Record" : "Add Medical Record"}
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <input
+                type="date"
+                name="recordDate"
+                value={formData.recordDate}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-blue-300"
+                required
+              />
+              <input
+                type="text"
+                name="diagnosis"
+                placeholder="Diagnosis"
+                value={formData.diagnosis}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-blue-300"
+                required
+              />
+              <textarea
+                name="notes"
+                placeholder="Notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-blue-300"
+                rows="4"
+              ></textarea>
+              <div className="flex justify-end space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="bg-gray-500 text-white py-3 px-6 rounded-lg hover:bg-gray-600 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition"
+                >
+                  {editMode ? "Update Record" : "Add Record"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Medical Records List */}
+      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {medicalRecords.map((record) => (
-          <li key={record.recordID} className="p-4 border rounded shadow">
-            <h2 className="text-lg font-bold">
+          <div
+            key={record.recordID}
+            className="p-6 bg-gradient-to-br from-blue-100 to-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105"
+          >
+            <h2 className="text-xl font-bold text-blue-800 mb-2">
               {new Date(record.recordDate).toLocaleDateString()}
             </h2>
-            <p>Diagnosis: {record.diagnosis}</p>
-            <p>Notes: {record.notes}</p>
-            <div className="flex space-x-4 mt-2">
-              <button
-                onClick={() => handleEdit(record)}
-                className="bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-600"
-              >
-                Edit
-              </button>
+            <p className="text-gray-700">
+              <strong>Diagnosis:</strong> {record.diagnosis}
+            </p>
+            <p className="text-gray-700 mb-4">
+              <strong>Notes:</strong> {record.notes || "N/A"}
+            </p>
+            <div className="flex justify-end space-x-4">
               <button
                 onClick={() => handleDelete(record.recordID)}
-                className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600"
+                className="bg-pink-500 text-white py-2 px-4 rounded-lg hover:bg-pink-600 transition"
               >
                 Delete
               </button>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };

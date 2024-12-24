@@ -3,6 +3,7 @@ import useGoalStore from "../store/goalStore";
 
 const GoalPage = () => {
   const { goals, fetchGoals, createGoal, updateGoal, deleteGoal, loading, error } = useGoalStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     goalName: "",
     targetValue: "",
@@ -39,18 +40,7 @@ const GoalPage = () => {
       goalStartDate: "",
       goalEndDate: "",
     });
-  };
-
-  const handleEdit = (goal) => {
-    setEditMode(true);
-    setEditId(goal.goalID);
-    setFormData({
-      goalName: goal.goalName || "",
-      targetValue: goal.targetValue || "",
-      currentValue: goal.currentValue || "",
-      goalStartDate: goal.goalStartDate.split("T")[0],
-      goalEndDate: goal.goalEndDate.split("T")[0],
-    });
+    setIsModalOpen(false);
   };
 
   const handleDelete = async (id) => {
@@ -58,93 +48,121 @@ const GoalPage = () => {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Goals</h1>
+    <div className="min-h-screen bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 p-8">
+      <h1 className="text-4xl font-extrabold text-center text-blue-800 mb-12">
+        Your Goals
+      </h1>
 
-      {loading && <p>Loading...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {loading && <p className="text-gray-500 text-center">Loading...</p>}
+      {error && <p className="text-red-500 text-center">{error}</p>}
 
-      <form onSubmit={handleSubmit} className="mb-6 space-y-4">
-        <input
-          type="text"
-          name="goalName"
-          placeholder="Goal Name"
-          value={formData.goalName}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="number"
-          name="targetValue"
-          placeholder="Target Value"
-          value={formData.targetValue}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="number"
-          name="currentValue"
-          placeholder="Current Value"
-          value={formData.currentValue}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="date"
-          name="goalStartDate"
-          placeholder="Start Date"
-          value={formData.goalStartDate}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="date"
-          name="goalEndDate"
-          placeholder="End Date"
-          value={formData.goalEndDate}
-          onChange={handleInputChange}
-          className="block w-full p-2 border rounded"
-          required
-        />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-        >
-          {editMode ? "Update Goal" : "Add Goal"}
-        </button>
-      </form>
+      {/* Add Goal Button */}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:scale-105 transform transition"
+      >
+        + Add Goal
+      </button>
 
-      <ul className="space-y-4">
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-md">
+            <h2 className="text-2xl font-semibold mb-6 text-gray-700 text-center">
+              Add New Goal
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <input
+                type="text"
+                name="goalName"
+                placeholder="Goal Name"
+                value={formData.goalName}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-indigo-300"
+                required
+              />
+              <input
+                type="number"
+                name="targetValue"
+                placeholder="Target Value"
+                value={formData.targetValue}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-indigo-300"
+                required
+              />
+              <input
+                type="number"
+                name="currentValue"
+                placeholder="Current Value"
+                value={formData.currentValue}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-indigo-300"
+              />
+              <input
+                type="date"
+                name="goalStartDate"
+                value={formData.goalStartDate}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-indigo-300"
+                required
+              />
+              <input
+                type="date"
+                name="goalEndDate"
+                value={formData.goalEndDate}
+                onChange={handleInputChange}
+                className="block w-full p-4 border rounded-lg shadow-sm focus:ring focus:ring-indigo-300"
+                required
+              />
+              <div className="flex justify-end space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="bg-gray-500 text-white py-3 px-6 rounded-lg hover:bg-gray-600 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition"
+                >
+                  {editMode ? "Update Goal" : "Add Goal"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Goals List */}
+      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {goals.map((goal) => (
-          <li key={goal.goalID} className="p-4 border rounded shadow">
-            <h2 className="text-lg font-bold">{goal.goalName}</h2>
-            <p>Target Value: {goal.targetValue}</p>
-            <p>Current Value: {goal.currentValue}</p>
-            <p>
-              Date Range: {new Date(goal.goalStartDate).toLocaleDateString()} -{" "}
+          <div
+            key={goal.goalID}
+            className="p-6 bg-gradient-to-br from-blue-100 to-white rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105"
+          >
+            <h2 className="text-xl font-bold text-blue-800 mb-2">
+              {goal.goalName}
+            </h2>
+            <p className="text-gray-700 mb-2">
+              <strong>Target Value:</strong> {goal.targetValue}
+            </p>
+            <p className="text-gray-700 mb-2">
+              <strong>Current Value:</strong> {goal.currentValue}
+            </p>
+            <p className="text-gray-700 mb-2">
+              <strong>Date Range:</strong> {new Date(goal.goalStartDate).toLocaleDateString()} -{" "}
               {new Date(goal.goalEndDate).toLocaleDateString()}
             </p>
-            <div className="flex space-x-4 mt-2">
-              <button
-                onClick={() => handleEdit(goal)}
-                className="bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-600"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(goal.goalID)}
-                className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </div>
-          </li>
+            <button
+              onClick={() => handleDelete(goal.goalID)}
+              className="mt-4 bg-pink-500 text-white py-2 px-4 rounded-lg hover:bg-pink-600 transition"
+            >
+              Delete
+            </button>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
