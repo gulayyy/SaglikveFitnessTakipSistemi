@@ -23,3 +23,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Ignore binary files
+*.dll
+*.exe
+*.pdb
+*.cache
+*.json
+
+# Ignore backend build directories
+/backend/bin/
+/backend/obj/
