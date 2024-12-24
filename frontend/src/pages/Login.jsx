@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import sportImage from '../assest/sport.jpg'; // Görseli düzgün import et
+import sportImage from '../assets/sport.jpg'; // Görseli düzgün import et
 import useAuthStore from "../store/authStore"; // Auth store importu
 
 

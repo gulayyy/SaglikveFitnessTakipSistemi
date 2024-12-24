@@ -60,12 +60,12 @@ const Register = () => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white p-8 rounded shadow-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Register</h1>
+    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-green-100 via-blue-100 to-purple-100">
+      <div className="w-full max-w-md bg-white p-8 rounded-md shadow-lg border border-purple-300">
+        <h1 className="text-2xl font-extrabold text-purple-600 text-center mb-6">Register</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="userName" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="userName" className="block text-sm font-medium text-purple-700">
               User Name
             </label>
             <input
@@ -74,12 +74,12 @@ const Register = () => {
               name="userName"
               value={formData.userName}
               onChange={handleChange}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-4 py-2 border border-purple-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
               required
             />
           </div>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-sm font-medium text-purple-700">
               Email
             </label>
             <input
@@ -88,12 +88,12 @@ const Register = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-4 py-2 border border-purple-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
               required
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-sm font-medium text-purple-700">
               Password
             </label>
             <input
@@ -102,12 +102,12 @@ const Register = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-4 py-2 border border-purple-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
               required
             />
           </div>
           <div>
-            <label htmlFor="age" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="age" className="block text-sm font-medium text-purple-700">
               Age
             </label>
             <input
@@ -116,12 +116,12 @@ const Register = () => {
               name="age"
               value={formData.age}
               onChange={handleChange}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-4 py-2 border border-purple-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
               required
             />
           </div>
           <div>
-            <label htmlFor="height" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="height" className="block text-sm font-medium text-purple-700">
               Height (cm)
             </label>
             <input
@@ -131,12 +131,12 @@ const Register = () => {
               name="height"
               value={formData.height}
               onChange={handleChange}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-4 py-2 border border-purple-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
               required
             />
           </div>
           <div>
-            <label htmlFor="weight" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="weight" className="block text-sm font-medium text-purple-700">
               Weight (kg)
             </label>
             <input
@@ -146,12 +146,12 @@ const Register = () => {
               name="weight"
               value={formData.weight}
               onChange={handleChange}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-4 py-2 border border-purple-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
               required
             />
           </div>
           <div>
-            <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="gender" className="block text-sm font-medium text-purple-700">
               Gender
             </label>
             <select
@@ -159,7 +159,7 @@ const Register = () => {
               name="gender"
               value={formData.gender}
               onChange={handleChange}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full px-4 py-2 border border-purple-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
               required
             >
               <option value="">Select Gender</option>
@@ -170,7 +170,7 @@ const Register = () => {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md shadow-md hover:bg-blue-700"
+            className="w-full bg-purple-600 text-white py-2 px-4 rounded-md shadow-md hover:bg-purple-700"
           >
             Register
           </button>
@@ -178,6 +178,7 @@ const Register = () => {
       </div>
     </div>
   );
+  
 };
 
 export default Register;

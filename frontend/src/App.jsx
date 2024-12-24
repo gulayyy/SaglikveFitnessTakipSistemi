@@ -1,4 +1,5 @@
 import React from "react";
+import './index.css';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import LoginRegister from "./pages/Login";
 import Dashboard from "./pages/Dashboard"; // Ana sayfa
